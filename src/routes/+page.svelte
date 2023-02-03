@@ -1,5 +1,8 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-<form method="POST" action="?/submit">
-    <button>b</button>
-</form>
+<div class="bg-white min-h-screen">
+    <div class="flex flex-col min-h-screen justify-center items-center">
+        <h1 class="text-6xl font-bold text-black">MapGPT</h1>
+        <form method="POST" action="?/submit">
+            <button>Submit</button>
+        </form>
+    </div>
+</div>
