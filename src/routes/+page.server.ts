@@ -45,26 +45,35 @@ export const actions = {
 			})
 			.catch((error) => console.error(error));
 
-		const jsonResponse = JSON.parse(textResponse);
-
 		let nodes_array: Node[] = [];
-		jsonResponse.nodes.forEach(function (node: Node) {
-			nodes_array.push({
-				id: node.id,
-				label: node.label,
-				color: node.color
-			});
-		});
-
 		let edges_array: Edge[] = [];
-		jsonResponse.edges.forEach(function (edge: Edge) {
-			edges_array.push({
-				from: edge.from,
-				to: edge.to,
-				label: edge.label
-			});
-		});
 
-		return { nodes_array: nodes_array, edges_array: edges_array };
+		let success = true;
+
+		try {
+			let desiredText = textResponse.substring(textResponse.indexOf('{'));
+			const jsonResponse = JSON.parse(desiredText);
+
+			jsonResponse.nodes.forEach(function (node: Node) {
+				nodes_array.push({
+					id: node.id,
+					label: node.label,
+					color: node.color
+				});
+			});
+
+			jsonResponse.edges.forEach(function (edge: Edge) {
+				edges_array.push({
+					from: edge.from,
+					to: edge.to,
+					label: edge.label
+				});
+			});
+		} catch (error) {
+			console.error(error);
+			success = false;
+		}
+
+		return { nodes_array: nodes_array, edges_array: edges_array, success: success };
 	}
 } satisfies Actions;
