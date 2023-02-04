@@ -3,65 +3,68 @@ import { OPENAI_API_KEY } from '$env/static/private';
 import { PROMPT_BASE } from '$lib/prompt';
 
 type Node = {
-  id: number;
-  label: string;
-  color: string;
-}
+	id: number;
+	label: string;
+	color: string;
+};
 
 type Edge = {
-  from: string;
-  to: string;
-  label: string;
-}
+	from: string;
+	to: string;
+	label: string;
+};
 
 export const actions = {
-  submit: async ({ request }) => {
-    const form_data = await request.formData();
-    console.log("submit")
+	submit: async ({ request }) => {
+		const form_data = await request.formData();
+		console.log('submit');
 
-    const prompt: string = PROMPT_BASE + "\n" + form_data.get('info') + "\n-";
-    console.log(prompt);
+		const prompt: string = PROMPT_BASE + '\n' + form_data.get('info') + '\n-';
+		console.log(prompt);
 
-    let textResponse = ''
-    const response = await fetch('https://api.openai.com/v1/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + OPENAI_API_KEY
-        },
-        body: JSON.stringify({
-          model: 'text-davinci-003',
-          prompt: prompt,
-          temperature: 0.1,
-          max_tokens: 2048,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);
-      textResponse = data.choices[0].text;
-    })
-    .catch(error => console.error(error));
+		let textResponse = '';
+		const response = await fetch('https://api.openai.com/v1/completions', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + OPENAI_API_KEY
+			},
+			body: JSON.stringify({
+				model: 'text-davinci-003',
+				prompt: prompt,
+				temperature: 0.1,
+				max_tokens: 2048,
+				frequency_penalty: 0,
+				presence_penalty: 0
+			})
+		})
+			.then((response) => response.json())
+			.then((data) => {
+				console.log(data);
+				textResponse = data.choices[0].text;
+			})
+			.catch((error) => console.error(error));
 
-    const jsonResponse = JSON.parse(textResponse);
+		const jsonResponse = JSON.parse(textResponse);
 
-        let nodes_array: Node[] = [];
-        jsonResponse.nodes.forEach(function(node: Node) {
-            nodes_array.push({
-                id: node.id, label: node.label, color: node.color
-            })
-        })
+		let nodes_array: Node[] = [];
+		jsonResponse.nodes.forEach(function (node: Node) {
+			nodes_array.push({
+				id: node.id,
+				label: node.label,
+				color: node.color
+			});
+		});
 
-        let edges_array: Edge[] = [];
-        jsonResponse.edges.forEach(function(edge: Edge) {
-            edges_array.push({
-                from: edge.from, to: edge.to, label: edge.label
-            })
-        })
+		let edges_array: Edge[] = [];
+		jsonResponse.edges.forEach(function (edge: Edge) {
+			edges_array.push({
+				from: edge.from,
+				to: edge.to,
+				label: edge.label
+			});
+		});
 
-    return { nodes_array: nodes_array, edges_array: edges_array}
-
-  }
+		return { nodes_array: nodes_array, edges_array: edges_array };
+	}
 } satisfies Actions;
