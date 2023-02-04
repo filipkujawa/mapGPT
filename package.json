@@ -32,6 +32,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"daisyui": "^2.50.0"
+		"daisyui": "^2.50.0",
+		"vis": "^4.21.0-EOL"
 	}
 }
