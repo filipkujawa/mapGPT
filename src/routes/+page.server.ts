@@ -1,5 +1,4 @@
 import type { Actions } from './$types';
-import { OPENAI_API_KEY } from '$env/static/private';
 import { PROMPT_BASE } from '$lib/prompt';
 
 type Node = {
@@ -19,15 +18,21 @@ export const actions = {
 		const form_data = await request.formData();
 		console.log('submit');
 
+		if (!form_data.get('API_KEY') || form_data.get('API_KEY') == "") {
+			return { nodes_array: [], edges_array: [], success: false, message: "No API key provided." }; 
+		} else if (!form_data.get('info') || form_data.get('info') == "") {
+			return { nodes_array: [], edges_array: [], success: false, message: "No prompt provided." }; 
+		}
+		console.log(form_data.get('API_KEY'))
+
 		const prompt: string = PROMPT_BASE + '\n' + form_data.get('info') + '\n-';
-		console.log(prompt);
 
 		let textResponse = '';
 		const response = await fetch('https://api.openai.com/v1/completions', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: 'Bearer ' + OPENAI_API_KEY
+				Authorization: 'Bearer ' + form_data.get('API_KEY')
 			},
 			body: JSON.stringify({
 				model: 'text-davinci-003',
@@ -40,7 +45,6 @@ export const actions = {
 		})
 			.then((response) => response.json())
 			.then((data) => {
-				console.log(data);
 				textResponse = data.choices[0].text;
 			})
 			.catch((error) => console.error(error));
@@ -74,7 +78,6 @@ export const actions = {
 			success = false;
 		}
 
-		console.log(success)
-		return { nodes_array: nodes_array, edges_array: edges_array, success: success };
+		return { nodes_array: nodes_array, edges_array: edges_array, success: success, message: null };
 	}
 } satisfies Actions;
