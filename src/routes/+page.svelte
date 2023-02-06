@@ -80,7 +80,7 @@
 		<h2 class="text-4xl text-black pb-4">Map concepts, Understand More</h2>
 		<div class="flex flex-row space-x-2">
 			<h2 class="text-1xl text-black pb-12">
-				Made by <a href="https://www.filipkujawa.com/" class="underline">Filip Kujawa</a>
+				Made by <a target="_blank" rel="noreferrer" href="https://www.filipkujawa.com/" class="underline">Filip Kujawa</a>
 			</h2>
 			<a href="https://github.com/filipkujawa"
 				><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
