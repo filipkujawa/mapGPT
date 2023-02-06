@@ -16,14 +16,12 @@ type Edge = {
 export const actions = {
 	submit: async ({ request }) => {
 		const form_data = await request.formData();
-		console.log('submit');
 
 		if (!form_data.get('API_KEY') || form_data.get('API_KEY') == '') {
 			return { nodes_array: [], edges_array: [], success: false, message: 'No API key provided.' };
 		} else if (!form_data.get('info') || form_data.get('info') == '') {
 			return { nodes_array: [], edges_array: [], success: false, message: 'No prompt provided.' };
 		}
-		console.log(form_data.get('API_KEY'));
 
 		const prompt: string = PROMPT_BASE + '\n' + form_data.get('info') + '\n-';
 
