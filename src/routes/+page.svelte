@@ -20,7 +20,6 @@
 		const nodes = new DataSet(form?.nodes_array);
 		const edges = new DataSet(form?.edges_array);
 		loading = false;
-		error = form?.success;
 
 		const container = document.getElementById('myMap');
 		network = new Network(container, { nodes, edges }, {});
@@ -53,7 +52,7 @@
 						bind:value={input}
 						name="info"
 						type="text"
-						placeholder="Type here"
+						placeholder="Shrek is friends with donkey"
 						class="input input-borderd border-black border-y-2 borer-l-2 w-full max-w-xl bg-transparent"
 					/>
 					<button on:click={handleSubmit} class="btn btn-info border-black border-y-2 border-r-2"
@@ -62,7 +61,7 @@
 				</label>
 			</form>
 			<!-- Error Alert -->
-			{#if error}
+			{#if form?.success == false}
 				<div class="flex justify-center pt-4">
 					<div class="alert alert-error shadow-lg w-1/2 justify-center">
 						<div>
@@ -107,11 +106,13 @@
 			{/if}
 		</div>
 		<div class="divider" />
-		<div class="flex flex-row space-x-4">
-			<button on:click={downloadMap} class="btn btn-square btn-outline">
-				<img src={downloadIcon} alt="Download" width="20" />
-			</button>
-		</div>
+		{#if form?.success == true}
+			<div class="flex flex-row space-x-4">
+				<button on:click={downloadMap} class="btn btn-square btn-outline">
+					<img src={downloadIcon} alt="Download" width="20" />
+				</button>
+			</div>
+		{/if}
 
 		<div class="min-w-full min-h-screen flex justify-center mt-12">
 			<div id="myMap" class="w-full" />

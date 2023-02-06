@@ -74,6 +74,7 @@ export const actions = {
 			success = false;
 		}
 
+		console.log(success)
 		return { nodes_array: nodes_array, edges_array: edges_array, success: success };
 	}
 } satisfies Actions;
