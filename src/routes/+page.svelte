@@ -148,7 +148,7 @@
 		<div class="form-control">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label class="label">
-				<span class="label-text text-black">Enter OPEN AI API Key</span>
+				<span class="label-text text-black">Enter <a class="underline text-info" href="https://platform.openai.com/account/api-keys">OPEN AI API Key</a></span>
 			</label>
 			<label class="input-group">
 				<input
