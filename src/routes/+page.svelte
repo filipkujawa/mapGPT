@@ -1,29 +1,119 @@
 <script lang="ts">
 	import { DataSet, Network } from 'vis';
-	import { onMount } from 'svelte';
-	import type { ActionData } from './$types';
 	import settingsIcon from '$lib/setting.png';
 	import downloadIcon from '$lib/download.png';
+	import { PROMPT_BASE } from '$lib/prompt';
 
+	type Node = {
+		id: number;
+		label: string;
+		color: string;
+	};
+
+	type Edge = {
+		from: string;
+		to: string;
+		label: string;
+	};
+
+	// Map Variables
 	let network;
 	let canvas: HTMLCanvasElement | null;
+	let nodes_array: Node[] = [];
+	let edges_array: Edge[] = [];
+
+	// User prompt.
 	let input: string;
 
-	let defaultErrorMessage: string = 'Something went wrong';
-	let loading: boolean = false;
-	export let form: ActionData;
+	// Error message displayed on alert.
+	let errorMessage: string = 'Something went wrong';
 
+	// Awaiting query response
+	let loading: boolean = false;
+
+	// Error querying prompt
+	let error: boolean = false;
+
+	// API Key variables
 	let OPEN_AI_API_KEY: string;
 	let API_KEY_INPUT: string = '';
 
-	onMount(async () => {
-		const nodes = new DataSet(form?.nodes_array);
-		const edges = new DataSet(form?.edges_array);
-		loading = false;
+	async function queryPrompt() {
+		loading = true;
+
+		// API Key validation
+		if (!OPEN_AI_API_KEY || OPEN_AI_API_KEY == '') {
+			errorMessage = 'Invalid API key.';
+			error = true;
+			loading = false;
+			return;
+		}
+
+		const prompt: string = PROMPT_BASE + '\n' + input + '\n-';
+
+		let resp: string = '';
+		const response = await fetch('https://api.openai.com/v1/completions', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: 'Bearer ' + OPEN_AI_API_KEY
+			},
+			body: JSON.stringify({
+				model: 'text-davinci-003',
+				prompt: prompt,
+				temperature: 0.1,
+				max_tokens: 2048,
+				frequency_penalty: 0,
+				presence_penalty: 0
+			})
+		})
+			.then((response) => response.json())
+			.then((data) => {
+				resp = data.choices[0].text;
+			})
+			.catch((err) => {
+				console.error(err);
+				error = true;
+				loading = false;
+				errorMessage = 'Error querying prompt.';
+			});
+
+		try {
+			let parsedText = resp.substring(resp.indexOf('{'));
+			const jsonResp = JSON.parse(parsedText);
+
+			jsonResp.nodes.forEach(function (node: Node) {
+				nodes_array.push({
+					id: node.id,
+					label: node.label,
+					color: node.color
+				});
+			});
+
+			jsonResp.edges.forEach(function (edge: Edge) {
+				edges_array.push({
+					from: edge.from,
+					to: edge.to,
+					label: edge.label
+				});
+			});
+			console.log(jsonResp);
+		} catch (err) {
+			console.error(err);
+			error = true;
+			loading = false;
+			errorMessage = 'Error parsing query response.';
+		}
+	}
+
+	function drawMap() {
+		console.log(nodes_array, edges_array);
+		const nodes = new DataSet(nodes_array);
+		const edges = new DataSet(edges_array);
 
 		const container = document.getElementById('myMap');
 		network = new Network(container, { nodes, edges }, {});
-	});
+	}
 
 	function downloadMap() {
 		canvas = document.querySelector('#myMap > div > canvas');
@@ -36,8 +126,11 @@
 		}
 	}
 
-	function handleSubmit() {
+	async function handleSubmit() {
 		loading = true;
+		await queryPrompt();
+		drawMap();
+		console.log('end submit');
 	}
 
 	function handleSaveApiKey() {
@@ -96,35 +189,30 @@
 			>
 		</div>
 		<div class="min-w-full">
-			<form method="POST" action="?/submit">
-				<label class="input-group justify-center">
-					<input
-						bind:value={input}
-						name="info"
-						type="text"
-						placeholder="Shrek is friends with donkey"
-						class="input input-borderd border-black border-y-2 borer-l-2 w-full max-w-xl bg-transparent"
-					/>
-					<input type="hidden" name="API_KEY" bind:value={OPEN_AI_API_KEY} />
-					<button on:click={handleSubmit} class="btn btn-info border-black border-y-2 border-r-2"
-						>Submit</button
-					>
-				</label>
-			</form>
+			<label class="input-group justify-center">
+				<input
+					bind:value={input}
+					name="info"
+					type="text"
+					placeholder="Shrek is friends with donkey"
+					class="input input-borderd border-black border-y-2 borer-l-2 w-full max-w-xl bg-transparent"
+				/>
+				<button on:click={handleSubmit} class="btn btn-info border-black border-y-2 border-r-2"
+					>Submit</button
+				>
+			</label>
 			<div class="flex flex-row space-x-2 justify-center pt-4">
 				<label for="settings-modal" class="btn btn-outline"
 					><img src={settingsIcon} width="15" alt="settings" /></label
 				>
-				{#if form?.success == true}
-					<div class="flex flex-row space-x-4">
-						<button on:click={downloadMap} class="btn btn-square btn-outline">
-							<img src={downloadIcon} alt="Download" width="20" />
-						</button>
-					</div>
-				{/if}
+				<div class="flex flex-row space-x-4">
+					<button on:click={downloadMap} class="btn btn-square btn-outline">
+						<img src={downloadIcon} alt="Download" width="20" />
+					</button>
+				</div>
 			</div>
 			<!-- Error Alert -->
-			{#if form?.success == false}
+			{#if error == true}
 				<div class="flex justify-center pt-4">
 					<div class="alert alert-error shadow-lg w-1/2 justify-center">
 						<div>
@@ -140,11 +228,7 @@
 									d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
 								/></svg
 							>
-							{#if form?.message}
-								<span>{form?.message}</span>
-							{:else}
-								<span>{defaultErrorMessage}</span>
-							{/if}
+							<span>{errorMessage}</span>
 						</div>
 					</div>
 				</div>
