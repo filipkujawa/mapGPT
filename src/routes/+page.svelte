@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DataSet, Network } from 'vis';
+	import { onMount } from 'svelte';
 	import settingsIcon from '$lib/setting.png';
 	import downloadIcon from '$lib/download.png';
 	import { PROMPT_BASE } from '$lib/prompt';
@@ -35,10 +36,14 @@
 	let error: boolean = false;
 
 	// API Key variables
-	let OPEN_AI_API_KEY: string;
-	let API_KEY_INPUT: string = '';
+	let OPEN_AI_API_KEY_INPUT: string | null;
+
+	onMount(() => {
+		OPEN_AI_API_KEY_INPUT = localStorage.getItem("OPEN_AI_API_KEY");
+	});
 
 	async function queryPrompt() {
+		const OPEN_AI_API_KEY = localStorage.getItem("OPEN_AI_API_KEY");
 		loading = true;
 
 		// API Key validation
@@ -132,7 +137,7 @@
 	}
 
 	function handleSaveApiKey() {
-		OPEN_AI_API_KEY = API_KEY_INPUT;
+		localStorage.setItem("OPEN_AI_API_KEY", OPEN_AI_API_KEY_INPUT);
 	}
 </script>
 
@@ -154,16 +159,12 @@
 			</label>
 			<label class="input-group">
 				<input
-					bind:value={API_KEY_INPUT}
+					bind:value={OPEN_AI_API_KEY_INPUT}
 					type="text"
 					placeholder="Type here"
 					class="input input-bordered bg-white w-full"
 				/>
-				{#if API_KEY_INPUT == OPEN_AI_API_KEY}
-					<button class="btn btn-disabled text-black">Saved</button>
-				{:else}
-					<button on:click={handleSaveApiKey} class="btn btn-info text-gray">Save</button>
-				{/if}
+				<button on:click={handleSaveApiKey} class="btn btn-info text-gray">Save</button>
 			</label>
 		</div>
 	</div>
