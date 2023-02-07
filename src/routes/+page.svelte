@@ -97,7 +97,6 @@
 					label: edge.label
 				});
 			});
-			console.log(jsonResp);
 		} catch (err) {
 			console.error(err);
 			error = true;
@@ -107,7 +106,6 @@
 	}
 
 	function drawMap() {
-		console.log(nodes_array, edges_array);
 		const nodes = new DataSet(nodes_array);
 		const edges = new DataSet(edges_array);
 
@@ -130,7 +128,7 @@
 		loading = true;
 		await queryPrompt();
 		drawMap();
-		console.log('end submit');
+		loading = false;
 	}
 
 	function handleSaveApiKey() {
